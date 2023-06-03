@@ -53,6 +53,7 @@ func CreateCounter(ctx context.Context) chan int {
 			default:
 				destination <- counter
 				counter++
+				time.Sleep(1 * time.Second) // Simulasi delay
 			}
 		}
 	}()
@@ -63,7 +64,8 @@ func CreateCounter(ctx context.Context) chan int {
 func TestContextWithCancel(t *testing.T) {
 	fmt.Println("Total Go-routine", runtime.NumGoroutine())
 	parent := context.Background()
-	ctx, cancel := context.WithCancel(parent)
+	ctx, cancel := context.WithTimeout(parent, 5*time.Second)
+	defer cancel()
 
 	detstination := CreateCounter(ctx)
 	for n := range detstination {
@@ -72,7 +74,6 @@ func TestContextWithCancel(t *testing.T) {
 			break
 		}
 	}
-	cancel()
 	time.Sleep(2 * time.Second)
 	fmt.Println("Total goroutine", runtime.NumGoroutine())
 
